@@ -56,8 +56,11 @@ That's it! Your application is now protected. 🎉
 You can customize the firewall's behavior by editing the constants at the top of firewall.php:
 
 **RISK_THRESHOLD**: The score at which a single request is immediately blocked.
+
 **SUSPICION_THRESHOLD**: The number of suspicious requests before a client is temporarily banned.
+
 **TIME_WINDOW**: The time window in seconds for tracking suspicious requests.
+
 **BLOCK_DURATION**: The duration in seconds for which a client is blocked.
 
 ## ⚠️ Important Security Notice
