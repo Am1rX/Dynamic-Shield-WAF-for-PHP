@@ -43,7 +43,8 @@ It’s built to stop the **“low and slow” attacks** that simple firewalls of
 
 1. **Download** the `firewall.php` file.  
 2. Place it in your PHP project’s root (or any desired directory).  
-3. Add this line at the very top of your application's entry point (`index.php`, `router.php`, etc.):  
+3. Add this line at the very top of your application's entry point (`index.php`, `router.php`, etc.):
+<img width="298" height="328" alt="Screenshot 2025-08-30 170733" src="https://github.com/user-attachments/assets/a198a627-3209-4646-ae2c-0b67bed48af7" />
 
 ```php
 <?php
