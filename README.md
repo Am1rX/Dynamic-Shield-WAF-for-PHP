@@ -76,3 +76,7 @@ You should always continue to use:
 
 ## 📜 License
 This project is licensed under the **MIT License**.
+
+## 📝 Author
+
+Created with ❤️ by **AMIRX**
