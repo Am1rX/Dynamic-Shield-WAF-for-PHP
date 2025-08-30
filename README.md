@@ -46,11 +46,14 @@ It’s built to stop the **“low and slow” attacks** that simple firewalls of
 3. Add this line at the very top of your application's entry point (`index.php`, `router.php`, etc.):
 <img width="298" height="328" alt="Screenshot 2025-08-30 170733" src="https://github.com/user-attachments/assets/a198a627-3209-4646-ae2c-0b67bed48af7" />
 
+
 ```php
 <?php
 // Include and execute the firewall before any other code runs.
 require_once 'firewall.php';
 ```
+<img width="1102" height="359" alt="Screenshot 2025-08-30 170853" src="https://github.com/user-attachments/assets/2c60ab1a-ae3b-442c-867c-1cfb8a6b5a90" />
+
 That's it! Your application is now protected. 🎉
 
 ## 🛠️ Configuration
