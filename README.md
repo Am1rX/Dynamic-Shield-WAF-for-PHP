@@ -4,6 +4,7 @@ A **robust**, class-based, persistence-driven **Web Application Firewall (WAF)**
 
 Unlike simple signature-based firewalls that rely on PHP Sessions (and can be bypassed by clearing cookies), **Dynamic Shield** uses **IP-based file storage**, **Deep Request Scanning**, and **behavioral analysis** to track, score, and block attackers with high accuracy.
 
+
 ## 💡 Core Philosophy
 
 Dynamic Shield focuses on **identifying malicious intent**, not just keywords.  
