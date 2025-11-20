@@ -56,6 +56,9 @@ Too much "noise" in a short time (e.g., SQLmap fingerprinting) → **temporary b
 ### 2. Integrate the Firewall
 Add this at the **very top** of your `index.php` (or any main entry file for protection like post.php):
 
+<img width="766" height="152" alt="Screenshot 2025-11-20 113309" src="https://github.com/user-attachments/assets/b188943a-c5cd-4010-a5e9-19a130fa080e" />
+
+
 ```php
 <?php
 // 1. Define the Security Key (Prevents direct access to the firewall file)
