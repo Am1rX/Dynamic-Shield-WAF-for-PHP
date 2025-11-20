@@ -49,9 +49,9 @@ Too much "noise" in a short time (e.g., SQLmap fingerprinting) → **temporary b
 ### 1. Create Directory Structure
 ```php
 /public_html/
-├── index.php
-└── security/
-    └── Firewall.php
+    ├── index.php
+    └── security/
+        └── Firewall.php
 ```
 ### 2. Integrate the Firewall
 Add this at the **very top** of your `index.php` (or any main entry file for protection like post.php):
