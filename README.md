@@ -1,82 +1,109 @@
-# 🛡️ Dynamic Shield WAF for PHP
+# 🛡️ Dynamic Shield WAF (v2.0)
 
-A lightweight, self-contained, behavior-driven **Web Application Firewall (WAF)** designed to protect PHP applications from common web threats like **SQL Injection (SQLi)** and **Cross-Site Scripting (XSS)**.
+A **robust**, class-based, persistence-driven **Web Application Firewall (WAF)** designed to protect PHP applications from advanced threats such as **SQL Injection (SQLi)**, **XSS**, **RCE**, and automated scanners.
 
-Unlike simple signature-based firewalls, Dynamic Shield uses a **multi-layered defense strategy** that includes **risk scoring** and **behavioral analysis** to detect and block sophisticated, automated attacks.
-
----
+Unlike simple signature-based firewalls that rely on PHP Sessions (and can be bypassed by clearing cookies), **Dynamic Shield** uses **IP-based file storage**, **Deep Request Scanning**, and **behavioral analysis** to track, score, and block attackers with high accuracy.
 
 ## 💡 Core Philosophy
-The primary goal of this WAF is not only to block known malicious patterns, but also to **identify malicious intent** by analyzing client behavior over time.  
-It’s built to stop the **“low and slow” attacks** that simple firewalls often miss.
 
----
+Dynamic Shield focuses on **identifying malicious intent**, not just keywords.  
+It uses a **Deep Scan Engine** that flattens nested arrays and JSON inputs to detect hidden payloads buried inside complex request structures. **No input goes unchecked.**
+
+It's built to stop **"low and slow" attacks** that simple firewalls often miss.
 
 ## ✨ Key Features
-- 🛡️ **Multi-Layered Defense**: Immediate blocking of high-risk requests + behavioral analysis for suspicious activities.  
-- 💯 **Risk-Scoring Engine**: Assigns risk scores to requests based on customizable attack patterns.  
-- 🤖 **Behavioral Analysis & Temp-Banning**: Tracks suspicious requests per session and blocks bot-like activity (e.g., dictionary attacks).  
-- 🎭 **Input Normalization**: Defeats evasion techniques like URL encoding & comment obfuscation.  
-- 🔌 **Easy to Integrate**: A single PHP file, drop it in with one line of code.  
-- 🔧 **Configurable**: Adjust thresholds, ban duration, and attack patterns to fit your needs.  
 
----
+| Feature                        | Description                                                                                     |
+|--------------------------------|-------------------------------------------------------------------------------------------------|
+| 🛡️ **IP-Based Persistence**     | Stores attacker data in `waf_storage` JSON files instead of PHP sessions                        |
+|                                    | ✔ Survives cookie clearing<br>✔ Blocks curl/python CLI attackers<br>✔ Works across browser restarts |
+| 🔍 **Deep Scan Engine**         | Recursively flattens nested arrays and JSON objects to reveal payloads hidden in:              |
+|                                    | `comment[body][text]`, `filters[user][input][raw]`, etc.                                        |
+| 🧠 **Context-Aware Rules**      | Understands logic breaks and polyglot payloads, including:<br>• `';`<br>• `<details>` HTML5 polyglots<br>• Backticks like: `alertx` |
+| 🔐 **Self-Protecting Architecture** | Auto-generates `.htaccess` and dummy `index.php` inside storage folders to prevent public access |
+| 🤖 **Behavioral Analysis**      | Tracks suspicious payloads over time. Low-risk anomalies accumulate → temporary ban            |
+| 🌐 **Modern API Support**       | Automatically scans `php://input` for JSON payloads (React, Vue, mobile apps, REST APIs)       |
+| 🏳️ **Smart Whitelisting**       | Built-in admin whitelist to prevent accidental self-blocking                                   |
 
 ## ⚙️ How It Works
 
-### Layer 1: ⚡ Immediate Threat Blocking
-1. **Normalization**: All `$_REQUEST` inputs (`$_GET`, `$_POST`, `$_COOKIE`) are normalized (URL decoded, comments removed).  
-2. **Risk Scoring**: Inputs are checked against regex attack patterns → scores are assigned.  
-3. **Decision**: If `total_risk_score >= RISK_THRESHOLD` → the request is **blocked instantly**.  
+### Layer 1 — 📥 Input Normalization & Flattening
+- Collects: `$_GET`, `$_POST`, `$_COOKIE`, `php://input`, User-Agent
+- Recursively flattens arrays
+- Normalizes (lowercase + urldecode)
+- Prevents bypasses using array nesting and encoding tricks
 
-### Layer 2: 📈 Behavioral Analysis (Suspicion Tracking)
-1. If a request is risky but not critical → it's marked as **suspicious**.  
-2. A **Suspicion Counter** increments per session for each suspicious request.  
-3. A **Time Window** (e.g., `60s`) tracks repeated suspicious behavior.  
-4. **Temp-Ban**: If the counter ≥ `SUSPICION_THRESHOLD`, the client is **blocked** for the `BLOCK_DURATION` (e.g., 5 mins).  
+### Layer 2 — ⚡ Immediate Threat Blocking (Score-Based)
 
-✅ This is **highly effective against tools like sqlmap**, which send many slightly varied requests.  
+| Type              | Examples                          | Score | Result          |
+|-------------------|-----------------------------------|-------|-----------------|
+| Critical Attack   | `UNION SELECT`, `<script>`, `/etc/passwd` | 20+   | Instant Block   |
+| High Risk Syntax  | `';`, `onmouseover=`              | 15+   | Instant Block   |
 
----
+### Layer 3 — 📈 Behavioral Analysis
+If risk score is below 15 → increments IP's **Suspicion Counter**.  
+Too much "noise" in a short time (e.g., SQLmap fingerprinting) → **temporary ban**.
 
 ## 🚀 Installation & Usage
 
-1. **Download** the `firewall.php` file.  
-2. Place it in your PHP project’s root (or any desired directory).  
-3. Add this line at the very top of your application's entry point (`index.php`, `router.php`, etc.):
-<img width="298" height="328" alt="Screenshot 2025-08-30 170733" src="https://github.com/user-attachments/assets/a198a627-3209-4646-ae2c-0b67bed48af7" />
+### 1. Create Directory Structure
+/public_html/
+├── index.php
+└── security/
+    └── Firewall.php
 
+### 2. Integrate the Firewall
+Add this at the **very top** of your `index.php` (or any main entry file for protection like post.php):
 
 ```php
 <?php
-// Include and execute the firewall before any other code runs.
-require_once 'firewall.php';
+// 1. Define the Security Key (Prevents direct access to the firewall file)
+define('PREVENT_DIRECT_ACCESS', true);
+
+// 2. Load the Firewall
+require_once __DIR__ . '/security/Firewall.php';
+
+// Your application code starts here...
 ```
-<img width="1102" height="359" alt="Screenshot 2025-08-30 170853" src="https://github.com/user-attachments/assets/2c60ab1a-ae3b-442c-867c-1cfb8a6b5a90" />
 
-That's it! Your application is now protected. 🎉
+### 🛠️ Configuration
+Tune behavior via constants in `Firewall.php`:
 
-## 🛠️ Configuration
-You can customize the firewall's behavior by editing the constants at the top of firewall.php:
+| Constant              | Default | Description                                             |
+|-----------------------|---------|---------------------------------------------------------|
+| `RISK_THRESHOLD`      | 15      | Score needed for immediate block                        |
+| `SUSPICION_THRESHOLD` | 20      | Cumulative suspicion score for behavioral block         |
+| `TIME_WINDOW`         | 60      | Seconds logs/suspicion persist during active monitoring|
+| `BLOCK_DURATION`      | 300     | Ban duration in seconds (5 minutes default)            |
 
-**RISK_THRESHOLD**: The score at which a single request is immediately blocked.
+### 📂 Logs & Storage
 
-**SUSPICION_THRESHOLD**: The number of suspicious requests before a client is temporarily banned.
+The firewall automatically creates the `waf_storage/` directory inside `/security/`:
 
-**TIME_WINDOW**: The time window in seconds for tracking suspicious requests.
+| File                  | Purpose                                                  |
+|-----------------------|----------------------------------------------------------|
+| `blocked_ips.json`    | Stores currently banned IPs with ban expiry time        |
+| `suspicion_log.json`  | Tracks active suspicion scores and timestamps per IP     |
+| `attacks.log`         | Human-readable log of all blocked attempts               |
+| `.htaccess`           | Auto-generated to deny all public access                |
+| `index.php`           | Dummy file (auto-generated) to prevent directory listing|
 
-**BLOCK_DURATION**: The duration in seconds for which a client is blocked.
+### ⚠️ Important Security Notice
+**Dynamic Shield** provides excellent baseline protection, but **it is not a silver bullet**.
 
-## ⚠️ Important Security Notice
-A WAF is an essential layer of security, but it is NOT a substitute for secure coding practices. It acts as a shield, not a fix for underlying vulnerabilities.
-You should always continue to use:
+Always combine it with best security practices:
 
-**Prepared Statements to prevent SQL Injection**
-**Proper Output Escaping (e.g., htmlspecialchars) to prevent XSS**
+| Best Practice                          | Recommendation                                      |
+|----------------------------------------|-----------------------------------------------------|
+| Database Queries                       | Always use **Prepared Statements** (PDO/MySQLi)     |
+| Output Encoding                        | Escape output with `htmlspecialchars()` or equivalent |
+| PHP Version                            | Keep PHP **updated** to the latest stable release  |
+| Input Handling                         | **Validate and sanitize** all input server-side    |
 
-## 📜 License
-This project is licensed under the **MIT License**.
+### 📜 License
 
-## 📝 Author
+This project is licensed under the **MIT License** – see the [LICENSE](LICENSE) file for details.
+
+### 📝 Author
 
 Created with ❤️ by **AMIRX**
